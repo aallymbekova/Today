@@ -11,10 +11,11 @@ extension ReminderListViewController {
     typealias DataSource = UICollectionViewDiffableDataSource<Int, Reminder.ID>
     typealias Snapshot = NSDiffableDataSourceSnapshot<Int, Reminder.ID>
     
-    func updateSnapshot(reloading ids: [Reminder.ID] = []) {
+    func updateSnapshot(reloading idsThatChanged: [Reminder.ID] = []) {
+        let ids = idsThatChanged.filter { id in filteredReminders.contains(where: { $0.id == id})}
         var snapshot = Snapshot()
         snapshot.appendSections([0])
-        snapshot.appendItems(reminder.map { $0.id})
+        snapshot.appendItems(filteredReminders.map { $0.id})
         
         if !ids.isEmpty {
             snapshot.reloadItems(ids)
@@ -52,13 +53,13 @@ extension ReminderListViewController {
     }
     
     func reminder(withId id: Reminder.ID) -> Reminder {
-        let index = reminder.indexOfReminder(withId: id)
-        return reminder[index]
+        let index = reminders.indexOfReminder(withId: id)
+        return reminders[index]
     }
     
     func updateReminder(_ reminder: Reminder) {
-        let index = self.reminder.indexOfReminder(withId: reminder.id)
-        self.reminder[index] = reminder
+        let index = self.reminders.indexOfReminder(withId: reminder.id)
+        self.reminders[index] = reminder
     }
     
     func completeReminder(withId id: Reminder.ID) {
@@ -66,6 +67,15 @@ extension ReminderListViewController {
         reminder.isComplete.toggle()
         updateReminder(reminder)
         updateSnapshot(reloading: [id])
+    }
+    
+    func addReminder( _ reminder: Reminder) {
+        self.reminders.append(reminder)
+    }
+    
+    func deleteReminder(withId id: Reminder.ID) {
+        let index = reminders.indexOfReminder(withId: id)
+        reminders.remove(at: index)
     }
     
     private func doneButtonAccessibilityAction(for reminder: Reminder) -> UIAccessibilityCustomAction {
